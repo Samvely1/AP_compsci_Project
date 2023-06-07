@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cookie Clicker</title>
+  <style>
+    #cookie {
+      width: 200px;
+      height: 200px;
+      background-image: url('cookie.png');
+      background-size: cover;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cookie Clicker</h1>
+  <p>Click the cookie to earn points:</p>
+  <div id="cookie"></div>
+  <p>Points: <span id="score">0</span></p>
+
+  <script>
+    // Initialize score variable
+    let score = 0;
+
+    // Function to increment score on cookie click
+    function incrementScore() {
+      score += 1;
+      document.getElementById("score").textContent = score;
+    }
+
+    // Add click event listener to the cookie element
+    document.getElementById("cookie").addEventListener("click", incrementScore);
+  </script>
+</body>
+</html>

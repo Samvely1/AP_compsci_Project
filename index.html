@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minesweeper</title>
+    <style>
+        .board {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        .board td {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <table class="board" id="minesweeper-board"></table>
+
+    <script>
+        function createBoard(size, numMines) {
+            var board = [];
+            var mines = new Set();
+
+            for (var i = 0; i < size; i++) {
+                var row = [];
+                for (var j = 0; j < size; j++) {
+                    row.push(' ');
+                }
+                board.push(row);
+            }
+
+            while (mines.size < numMines) {
+                var row = Math.floor(Math.random() * size);
+                var col = Math.floor(Math.random() * size);
+                mines.add(row + ',' + col);
+                board[row][col] = 'X';
+            }
+
+            return board;
+        }
+
+        function printBoard(board) {
+            var table = document.getElementById('minesweeper-board');
+            table.innerHTML = '';
+
+            var size = board.length;
+
+            var headerRow = document.createElement('tr');
+            var headerCell = document.createElement('th');
+            headerCell.colSpan = size;
+            headerCell.textContent = '   ' + Array.from(Array(size).keys()).join(' ');
+            headerRow.appendChild(headerCell);
+            table.appendChild(headerRow);
+
+            var separatorRow = document.createElement('tr');
+            var separatorCell = document.createElement('td');
+            separatorCell.colSpan = size;
+            separatorCell.textContent = ' ' + '-'.repeat(size * 2 + 1);
+            separatorRow.appendChild(separatorCell);
+            table.appendChild(separatorRow);
+
+            for (var row = 0; row < size; row++) {
+                var tableRow = document.createElement('tr');
+                var indexCell = document.createElement('td');
+                indexCell.textContent = row;
+                tableRow.appendChild(indexCell);
+
+                for (var col = 0; col < size; col++) {
+                    var cell = document.createElement('td');
+                    cell.textContent = board[row][col];
+                    tableRow.appendChild(cell);
+                }
+
+                table.appendChild(tableRow);
+            }
+
+            var footerRow = document.createElement('tr');
+            var footerCell = document.createElement('td');
+            footerCell.colSpan = size;
+            footerCell.textContent = ' ' + '-'.repeat(size * 2 + 1);
+            footerRow.appendChild(footerCell);
+            table.appendChild(footerRow);
+        }
+
+        function countAdjacentMines(board, row, col) {
+            var size = board.length;
+            var count = 0;
+
+            for (var i = Math.max(0, row - 1); i < Math.min(row + 2, size); i++) {
+                for (var j = Math.max(0, col - 1); j < Math.min(col + 2, size); j++) {
+                    if (board[i][j] === 'X') {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        function revealCell(board, row, col, revealed) {
+            if (board[row][col] !== ' ' || revealed.has(row + ',' + col)) {
+                return;
+            }
+
+            var size = board.length;
+            var count = countAdjacentMines(board, row, col);
+            board[row][col] = count > 0 ? count.toString() : ' ';
+            revealed.add(row + ',' + col);
+
+            if (count === 0) {
+                for (var i = Math.max(0, row - 1); i < Math.min(row + 2, size); i++) {
+                    for (var j = Math.max(0, col - 1); j < Math.min(col + 2, size); j++) {
+                        revealCell(board, i, j, revealed);
+                    }
+                }
+            }
+        }
+
+        function playGame(size, numMines) {
+            var board = createBoard(size, numMines);
+            var gameOver = false;
+
+            printBoard(board);
+
+            var table = document.getElementById('minesweeper-board');
+            table.addEventListener('click', function (event) {
+                if (gameOver) {
+                    return;
+                }
+
+                var cell = event.target;
+                var row = cell.parentNode.rowIndex - 1;
+                var col = cell.cellIndex - 1;
+
+                if (row >= 0 && col >= 0) {
+                    if (board[row][col] === 'X') {
+                        alert('Game Over!');
+                        gameOver = true;
+                    } else {
+                        revealCell(board, row, col, new Set());
+                        printBoard(board);
+
+                        var totalCells = size * size;
+                        var revealedCells = board.reduce(function (count, row) {
+                            return count + row.filter(function (cell) {
+                                return cell === ' ';
+                            }).length;
+                        }, 0);
+
+                        if (revealedCells + numMines === totalCells) {
+                            alert('Congratulations! You won!');
+                            gameOver = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        playGame(8, 10);
+    </script>
+</body>
+</html>
